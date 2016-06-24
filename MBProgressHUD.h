@@ -37,7 +37,7 @@
 extern CGFloat const MBProgressMaxOffset;
 
 typedef NS_ENUM(NSInteger, MBProgressHUDMode) {
-    /// UIActivityIndicatorView.
+    /// UIActivityIndicatorView. 无限转
     MBProgressHUDModeIndeterminate,
     /// A round, pie-chart like, progress view.
     MBProgressHUDModeDeterminate,
@@ -52,7 +52,7 @@ typedef NS_ENUM(NSInteger, MBProgressHUDMode) {
 };
 
 typedef NS_ENUM(NSInteger, MBProgressHUDAnimation) {
-    /// Opacity animation
+    /// Opacity animation 默认动画类型
     MBProgressHUDAnimationFade,
     /// Opacity + scale animation (zoom in when appearing zoom out when disappearing)
     MBProgressHUDAnimationZoom,
@@ -64,9 +64,9 @@ typedef NS_ENUM(NSInteger, MBProgressHUDAnimation) {
 
 typedef NS_ENUM(NSInteger, MBProgressHUDBackgroundStyle) {
     /// Solid color background
-    MBProgressHUDBackgroundStyleSolidColor,
+    MBProgressHUDBackgroundStyleSolidColor,//<IOS7
     /// UIVisualEffectView or UIToolbar.layer background view
-    MBProgressHUDBackgroundStyleBlur
+    MBProgressHUDBackgroundStyleBlur //>=IOS7
 };
 
 typedef void (^MBProgressHUDCompletionBlock)();
@@ -189,6 +189,9 @@ NS_ASSUME_NONNULL_BEGIN
  * not be shown at all.
  * This may be used to prevent HUD display for very short tasks.
  * Defaults to 0 (no grace time).
+ 
+ 延迟显示时间 
+ 
  */
 @property (assign, nonatomic) NSTimeInterval graceTime;
 
@@ -202,6 +205,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Removes the HUD from its parent view when hidden.
  * Defaults to NO.
+ 
+   隐藏的时候是否从父视图移除
+ 
  */
 @property (assign, nonatomic) BOOL removeFromSuperViewOnHide;
 
@@ -216,6 +222,12 @@ NS_ASSUME_NONNULL_BEGIN
  * A color that gets forwarded to all labels and supported indicators. Also sets the tintColor
  * for custom views on iOS 7+. Set to nil to manage color individually.
  * Defaults to semi-translucent black on iOS 7 and later and white on earlier iOS versions.
+ 
+ 
+ ios7前白色 ios7及之后为半透明 支持appearance 将appearance的值设为nil来单独定制
+ 
+ 内容的颜色 label的文本颜色 圈圈的颜色
+ 
  */
 @property (strong, nonatomic, nullable) UIColor *contentColor UI_APPEARANCE_SELECTOR;
 
@@ -235,6 +247,11 @@ NS_ASSUME_NONNULL_BEGIN
  * The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views).
  * This also represents the minimum bezel distance to the edge of the HUD view.
  * Defaults to 20.f
+ 
+ UI_APPEARANCE_SELECTOR 支持appearance方法  
+ 
+ 表示hud内容到hud边缘的距离
+ 
  */
 @property (assign, nonatomic) CGFloat margin UI_APPEARANCE_SELECTOR;
 
@@ -251,6 +268,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * When enabled, the bezel center gets slightly affected by the device accelerometer data.
  * Has no effect on iOS < 7.0. Defaults to YES.
+ 
+ 是否支持MotionEffects
+ 
  */
 @property (assign, nonatomic, getter=areDefaultMotionEffectsEnabled) BOOL defaultMotionEffectsEnabled UI_APPEARANCE_SELECTOR;
 
@@ -258,6 +278,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * The progress of the progress indicator, from 0.0 to 1.0. Defaults to 0.0.
+ 
+ 进度 
+ 
  */
 @property (assign, nonatomic) float progress;
 
@@ -265,11 +288,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * The view containing the labels and indicator (or customView).
+ 
+ 用户看到的hud视图
+ 
  */
 @property (strong, nonatomic, readonly) MBBackgroundView *bezelView;
 
 /**
  * View covering the entire HUD area, placed behind bezelView.
+ 
+ 整个背景 一般是屏幕大小 透明
+ 
  */
 @property (strong, nonatomic, readonly) MBBackgroundView *backgroundView;
 
@@ -282,16 +311,25 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A label that holds an optional short message to be displayed below the activity indicator. The HUD is automatically resized to fit
  * the entire text.
+ 
+ 文本
+ 
  */
 @property (strong, nonatomic, readonly) UILabel *label;
 
 /**
  * A label that holds an optional details message displayed below the labelText message. The details text can span multiple lines.
+ 
+ 细节文本 字体更小一点 允许多行显示
+ 
  */
 @property (strong, nonatomic, readonly) UILabel *detailsLabel;
 
 /**
  * A button that is placed below the labels. Visible only if a target / action is added. 
+ 
+ label下的按钮
+ 
  */
 @property (strong, nonatomic, readonly) UIButton *button;
 
@@ -323,6 +361,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Indicator progress color.
  * Defaults to white [UIColor whiteColor].
+ 
+ 进度条颜色
+ 
  */
 @property (nonatomic, strong) UIColor *progressTintColor;
 
@@ -330,6 +371,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Indicator background (non-progress) color. 
  * Only applicable on iOS versions older than iOS 7.
  * Defaults to translucent white (alpha 0.1).
+ 
+ 环纹颜色
+ 
  */
 @property (nonatomic, strong) UIColor *backgroundTintColor;
 
@@ -354,12 +398,18 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Bar border line color.
  * Defaults to white [UIColor whiteColor].
+ 
+ 边框颜色
+ 
  */
 @property (nonatomic, strong) UIColor *lineColor;
 
 /**
  * Bar background color.
  * Defaults to clear [UIColor clearColor];
+ 
+ 所有空白地方的颜色 不是剩余进度的颜色
+ 
  */
 @property (nonatomic, strong) UIColor *progressRemainingColor;
 

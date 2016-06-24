@@ -71,6 +71,7 @@
 
     // Fire off an asynchronous task, giving UIKit the opportunity to redraw wit the HUD added to the
     // view hierarchy.
+	//等级表示任务由UI发起并且可以异步执行。它应该用在用户需要即时的结果同时又要求可以继续交互的任务。
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
 
         // Do something useful in the background

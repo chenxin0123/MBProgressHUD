@@ -16,6 +16,7 @@
     #define kCFCoreFoundationVersionNumber_iOS_8_0 1129.15
 #endif
 
+//是否为主线程
 #define MBMainThreadAssert() NSAssert([NSThread isMainThread], @"MBProgressHUD needs to be accessed on the main thread.");
 
 CGFloat const MBProgressMaxOffset = 1000000.f;
@@ -40,6 +41,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @property (nonatomic, strong) UIView *topSpacer;
 @property (nonatomic, strong) UIView *bottomSpacer;
 @property (nonatomic, weak) NSTimer *graceTimer;
+///最短的显示时间
 @property (nonatomic, weak) NSTimer *minShowTimer;
 @property (nonatomic, weak) NSTimer *hideDelayTimer;
 
@@ -61,6 +63,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     MBProgressHUD *hud = [[self alloc] initWithView:view];
     hud.removeFromSuperViewOnHide = YES;
     [view addSubview:hud];
+    //这时候alpha为0
     [hud showAnimated:animated];
     return hud;
 }
@@ -86,7 +89,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Lifecycle
-
+///r 设置一些基本属性 添加子视图等
 - (void)commonInit {
     // Set default values for properties
     _animationType = MBProgressHUDAnimationFade;
@@ -95,7 +98,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     _opacity = 1.f;
     _defaultMotionEffectsEnabled = YES;
 
-    // Default color, depending on the current iOS version
+    // Default color, depending on the current iOS version 默认颜色
     BOOL isLegacy = kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0;
     _contentColor = isLegacy ? [UIColor whiteColor] : [UIColor colorWithWhite:0.f alpha:0.7f];
     // Transparent background
@@ -104,6 +107,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     // Make it invisible for now
     self.alpha = 0.0f;
     self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    ///子视图不继承父视图的透明度
     self.layer.allowsGroupOpacity = NO;
 
     [self setupViews];
@@ -111,6 +115,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self registerForNotifications];
 }
 
+///r
 - (instancetype)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
         [self commonInit];
@@ -118,6 +123,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     return self;
 }
 
+///r
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if ((self = [super initWithCoder:aDecoder])) {
         [self commonInit];
@@ -125,17 +131,22 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     return self;
 }
 
+///r initWithFrame:view.bounds
 - (id)initWithView:(UIView *)view {
     NSAssert(view, @"View must not be nil.");
     return [self initWithFrame:view.bounds];
 }
 
+///r
 - (void)dealloc {
     [self unregisterFromNotifications];
 }
 
 #pragma mark - Show & hide
 
+/**
+ *  若有延迟显示 则延迟 否则立即显示
+ */
 - (void)showAnimated:(BOOL)animated {
     MBMainThreadAssert();
     [self.minShowTimer invalidate];
@@ -181,6 +192,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Timer callbacks
 
+///延迟显示 定时器触发 未结束则立即显示
 - (void)handleGraceTimer:(NSTimer *)theTimer {
     // Show the HUD only if the task is still running
     if (!self.hasFinished) {
@@ -304,10 +316,10 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - UI
-
+/// 添加子视图 r
 - (void)setupViews {
     UIColor *defaultColor = self.contentColor;
-
+    //背景
     MBBackgroundView *backgroundView = [[MBBackgroundView alloc] initWithFrame:self.bounds];
     backgroundView.style = MBProgressHUDBackgroundStyleSolidColor;
     backgroundView.backgroundColor = [UIColor clearColor];
@@ -316,6 +328,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self addSubview:backgroundView];
     _backgroundView = backgroundView;
 
+    
     MBBackgroundView *bezelView = [MBBackgroundView new];
     bezelView.translatesAutoresizingMaskIntoConstraints = NO;
     bezelView.layer.cornerRadius = 5.f;
@@ -337,6 +350,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     detailsLabel.adjustsFontSizeToFitWidth = NO;
     detailsLabel.textAlignment = NSTextAlignmentCenter;
     detailsLabel.textColor = defaultColor;
+    //可以多行显示
     detailsLabel.numberOfLines = 0;
     detailsLabel.font = [UIFont boldSystemFontOfSize:MBDefaultDetailsLabelFontSize];
     detailsLabel.opaque = NO;
@@ -350,7 +364,9 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     _button = button;
 
     for (UIView *view in @[label, detailsLabel, button]) {
+        //自动布局
         view.translatesAutoresizingMaskIntoConstraints = NO;
+        //设置默认的弹性约束 不许挤我
         [view setContentCompressionResistancePriority:998.f forAxis:UILayoutConstraintAxisHorizontal];
         [view setContentCompressionResistancePriority:998.f forAxis:UILayoutConstraintAxisVertical];
         [bezelView addSubview:view];
@@ -369,6 +385,9 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     _bottomSpacer = bottomSpacer;
 }
 
+/**
+ *  根据mode(MBProgressHUDMode)添加indicator r
+ */
 - (void)updateIndicators {
     UIView *indicator = self.indicator;
     BOOL isActivityIndicator = [indicator isKindOfClass:[UIActivityIndicatorView class]];
@@ -377,6 +396,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     MBProgressHUDMode mode = self.mode;
     if (mode == MBProgressHUDModeIndeterminate) {
         if (!isActivityIndicator) {
+            //菊花
             // Update to indeterminate indicator
             [indicator removeFromSuperview];
             indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
@@ -386,11 +406,13 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
     else if (mode == MBProgressHUDModeDeterminateHorizontalBar) {
         // Update to bar determinate indicator
+        //进度条
         [indicator removeFromSuperview];
         indicator = [[MBBarProgressView alloc] init];
         [self.bezelView addSubview:indicator];
     }
     else if (mode == MBProgressHUDModeDeterminate || mode == MBProgressHUDModeAnnularDeterminate) {
+        //圆圈进度
         if (!isRoundIndicator) {
             // Update to determinante indicator
             [indicator removeFromSuperview];
@@ -402,18 +424,20 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         }
     } 
     else if (mode == MBProgressHUDModeCustomView && self.customView != indicator) {
-        // Update custom view indicator
+        // Update custom view indicator 自定义视图
         [indicator removeFromSuperview];
         indicator = self.customView;
         [self.bezelView addSubview:indicator];
     }
     else if (mode == MBProgressHUDModeText) {
+        //纯文本 不需要
         [indicator removeFromSuperview];
         indicator = nil;
     }
     indicator.translatesAutoresizingMaskIntoConstraints = NO;
     self.indicator = indicator;
 
+    //设置进度
     if ([indicator respondsToSelector:@selector(setProgress:)]) {
         [(id)indicator setValue:@(self.progress) forKey:@"progress"];
     }
@@ -425,6 +449,11 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self setNeedsUpdateConstraints];
 }
 
+
+/**
+ *  设置文本 按钮标题颜色 r
+ *
+ */
 - (void)updateViewsForColor:(UIColor *)color {
     if (!color) return;
 
@@ -443,6 +472,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
     UIView *indicator = self.indicator;
     if ([indicator isKindOfClass:[UIActivityIndicatorView class]]) {
+        //菊花颜色
         UIActivityIndicatorView *appearance = nil;
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < 90000
         appearance = [UIActivityIndicatorView appearanceWhenContainedIn:[MBProgressHUD class], nil];
@@ -455,6 +485,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
             ((UIActivityIndicatorView *)indicator).color = color;
         }
     } else if ([indicator isKindOfClass:[MBRoundProgressView class]]) {
+        //圆形进度
         MBRoundProgressView *appearance = nil;
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < 90000
         appearance = [MBRoundProgressView appearanceWhenContainedIn:[MBProgressHUD class], nil];
@@ -468,6 +499,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
             ((MBRoundProgressView *)indicator).backgroundTintColor = [color colorWithAlphaComponent:0.1];
         }
     } else if ([indicator isKindOfClass:[MBBarProgressView class]]) {
+        //进度条
         MBBarProgressView *appearance = nil;
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < 90000
         appearance = [MBBarProgressView appearanceWhenContainedIn:[MBProgressHUD class], nil];
@@ -489,6 +521,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)updateBezelMotionEffects {
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000 || TARGET_OS_TV
     MBBackgroundView *bezelView = self.bezelView;
@@ -518,7 +551,9 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Layout
-
+/**
+ *  setNeedsUpdateConstraints 触发这个方法 结尾必须调用父类实现 在这之前你可以做一些验证或者清理操作
+ */
 - (void)updateConstraints {
     UIView *bezel = self.bezelView;
     UIView *topSpacer = self.topSpacer;
@@ -691,6 +726,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setContentColor:(UIColor *)contentColor {
     if (contentColor != _contentColor && ![contentColor isEqual:_contentColor]) {
         _contentColor = contentColor;
@@ -707,6 +743,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Notifications
 
+///app方向改变
 - (void)registerForNotifications {
 #if !TARGET_OS_TV
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -716,6 +753,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 #endif
 }
 
+///r
 - (void)unregisterFromNotifications {
 #if !TARGET_OS_TV
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -724,6 +762,8 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #if !TARGET_OS_TV
+
+///有父视图 更新方向 r
 - (void)statusBarOrientationDidChange:(NSNotification *)notification {
     UIView *superview = self.superview;
     if (!superview) {
@@ -734,6 +774,10 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 #endif
 
+/**
+ *  根据屏幕方向计算旋转角度 然后动画改变角度 //ios8之后 或者父视图不是UIWindow不需要处理 自动 妥妥的 r
+ *
+ */
 - (void)updateForCurrentOrientationAnimated:(BOOL)animated {
     // Stay in sync with the superview in any case
     if (self.superview) {
@@ -745,6 +789,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < 80000
     // Only needed pre iOS 8 when added to a window
     BOOL iOS8OrLater = kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0;
+    //ios8之后 或者父视图不是UIWindow
     if (iOS8OrLater || ![self.superview isKindOfClass:[UIWindow class]]) return;
 
     // Make extension friendly. Will not get called on extensions (iOS 8+) due to the above check.
@@ -754,9 +799,11 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
     UIApplication *application = [UIApplication performSelector:@selector(sharedApplication)];
     UIInterfaceOrientation orientation = application.statusBarOrientation;
-    CGFloat radians = 0;
     
+    //旋转角度
+    CGFloat radians = 0;
     if (UIInterfaceOrientationIsLandscape(orientation)) {
+        //横屏
         radians = orientation == UIInterfaceOrientationLandscapeLeft ? -(CGFloat)M_PI_2 : (CGFloat)M_PI_2;
         // Window coordinates differ!
         self.bounds = CGRectMake(0, 0, self.bounds.size.height, self.bounds.size.width);
@@ -780,11 +827,11 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @implementation MBRoundProgressView
 
 #pragma mark - Lifecycle
-
+///r
 - (id)init {
     return [self initWithFrame:CGRectMake(0.f, 0.f, 37.f, 37.f)];
 }
-
+//r
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
@@ -799,13 +846,13 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Layout
-
+///r
 - (CGSize)intrinsicContentSize {
     return CGSizeMake(37.f, 37.f);
 }
 
 #pragma mark - Properties
-
+///r
 - (void)setProgress:(float)progress {
     if (progress != _progress) {
         _progress = progress;
@@ -813,6 +860,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setProgressTintColor:(UIColor *)progressTintColor {
     NSAssert(progressTintColor, @"The color should not be nil.");
     if (progressTintColor != _progressTintColor && ![progressTintColor isEqual:_progressTintColor]) {
@@ -821,6 +869,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setBackgroundTintColor:(UIColor *)backgroundTintColor {
     NSAssert(backgroundTintColor, @"The color should not be nil.");
     if (backgroundTintColor != _backgroundTintColor && ![backgroundTintColor isEqual:_backgroundTintColor]) {
@@ -830,7 +879,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Drawing
-
+///r
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
     BOOL isPreiOS7 = kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0;
@@ -841,13 +890,16 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         UIBezierPath *processBackgroundPath = [UIBezierPath bezierPath];
         processBackgroundPath.lineWidth = lineWidth;
         processBackgroundPath.lineCapStyle = kCGLineCapButt;
+        //以自己的中心为圆圈中心
         CGPoint center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
         CGFloat radius = (self.bounds.size.width - lineWidth)/2;
         CGFloat startAngle = - ((float)M_PI / 2); // 90 degrees
+        //startAngle是负数 所以用加 瞎
         CGFloat endAngle = (2 * (float)M_PI) + startAngle;
         [processBackgroundPath addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:YES];
         [_backgroundTintColor set];
         [processBackgroundPath stroke];
+        
         // Draw progress
         UIBezierPath *processPath = [UIBezierPath bezierPath];
         processPath.lineCapStyle = isPreiOS7 ? kCGLineCapRound : kCGLineCapSquare;
@@ -901,11 +953,11 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @implementation MBBarProgressView
 
 #pragma mark - Lifecycle
-
+///r
 - (id)init {
     return [self initWithFrame:CGRectMake(.0f, .0f, 120.0f, 20.0f)];
 }
-
+//r
 - (id)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
@@ -920,21 +972,21 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Layout
-
+//r
 - (CGSize)intrinsicContentSize {
     BOOL isPreiOS7 = kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0;
     return CGSizeMake(120.f, isPreiOS7 ? 20.f : 10.f);
 }
 
 #pragma mark - Properties
-
+//r
 - (void)setProgress:(float)progress {
     if (progress != _progress) {
         _progress = progress;
         [self setNeedsDisplay];
     }
 }
-
+//r
 - (void)setProgressColor:(UIColor *)progressColor {
     NSAssert(progressColor, @"The color should not be nil.");
     if (progressColor != _progressColor && ![progressColor isEqual:_progressColor]) {
@@ -942,7 +994,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         [self setNeedsDisplay];
     }
 }
-
+//r
 - (void)setProgressRemainingColor:(UIColor *)progressRemainingColor {
     NSAssert(progressRemainingColor, @"The color should not be nil.");
     if (progressRemainingColor != _progressRemainingColor && ![progressRemainingColor isEqual:_progressRemainingColor]) {
@@ -952,7 +1004,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Drawing
-
+//r
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
     
@@ -999,7 +1051,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         
         CGContextFillPath(context);
     }
-    
+
     // Progress in the right arc
     else if (amount > radius + 4) {
         CGFloat x = amount - (rect.size.width - radius - 4);
@@ -1022,7 +1074,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         
         CGContextFillPath(context);
     }
-    
+
     // Progress is in the left arc
     else if (amount < radius + 4 && amount > 0) {
         CGContextMoveToPoint(context, 4, rect.size.height/2);
@@ -1053,7 +1105,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @implementation MBBackgroundView
 
 #pragma mark - Lifecycle
-
+///r 根据系统版本来设置_style 和 _color
 - (instancetype)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
         if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
@@ -1076,14 +1128,14 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Layout
-
+//r
 - (CGSize)intrinsicContentSize {
     // Smallest size possible. Content pushes against this.
     return CGSizeZero;
 }
 
 #pragma mark - Appearance
-
+///r
 - (void)setStyle:(MBProgressHUDBackgroundStyle)style {
     if (style == MBProgressHUDBackgroundStyleBlur && kCFCoreFoundationVersionNumber < kCFCoreFoundationVersionNumber_iOS_7_0) {
         style = MBProgressHUDBackgroundStyleSolidColor;
@@ -1094,6 +1146,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setColor:(UIColor *)color {
     NSAssert(color, @"The color should not be nil.");
     if (color != _color && ![color isEqual:_color]) {
@@ -1104,11 +1157,11 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark - Views
-
+///r
 - (void)updateForBackgroundStyle {
     MBProgressHUDBackgroundStyle style = self.style;
     if (style == MBProgressHUDBackgroundStyleBlur) {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000 || TARGET_OS_TV
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000 || TARGET_OS_TV0000000
         if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
             UIBlurEffect *effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
             UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:effect];
@@ -1120,6 +1173,8 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
             self.effectView = effectView;
         } else {
 #endif
+            
+            
             UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectInset(self.bounds, -100.f, -100.f)];
             toolbar.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             toolbar.barTintColor = self.color;
@@ -1145,6 +1200,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r 根据style 设置背景颜色
 - (void)updateViewsForColor:(UIColor *)color {
     if (self.style == MBProgressHUDBackgroundStyleBlur) {
         if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_8_0) {
@@ -1360,10 +1416,12 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     self.backgroundView.color = dimBackground ? [UIColor colorWithWhite:0.f alpha:.2f] : [UIColor clearColor];
 }
 
+///r
 - (CGSize)size {
     return self.bezelView.frame.size;
 }
 
+///r
 - (UIColor *)activityIndicatorColor {
     return _activityIndicatorColor;
 }

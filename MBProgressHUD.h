@@ -51,6 +51,7 @@ typedef NS_ENUM(NSInteger, MBProgressHUDMode) {
     MBProgressHUDModeText
 };
 
+///hud消失与显示的方式 默认淡入淡出
 typedef NS_ENUM(NSInteger, MBProgressHUDAnimation) {
     /// Opacity animation 默认动画类型
     MBProgressHUDAnimationFade,
@@ -408,7 +409,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Bar background color.
  * Defaults to clear [UIColor clearColor];
  
- 所有空白地方的颜色 不是剩余进度的颜色
+ 边框内所有空白地方的颜色 不是剩余进度的颜色
  
  */
 @property (nonatomic, strong) UIColor *progressRemainingColor;

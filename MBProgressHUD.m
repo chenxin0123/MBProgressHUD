@@ -29,12 +29,16 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @interface MBProgressHUD () {
     // Deprecated
     UIColor *_activityIndicatorColor;
+    //hud的透明度 1.0
     CGFloat _opacity;
 }
 
 @property (nonatomic, assign) BOOL useAnimation;
+
+///隐藏则为YES
 @property (nonatomic, assign, getter=hasFinished) BOOL finished;
 @property (nonatomic, strong) UIView *indicator;
+///开始显示的时间
 @property (nonatomic, strong) NSDate *showStarted;
 @property (nonatomic, strong) NSArray *paddingConstraints;
 @property (nonatomic, strong) NSArray *bezelConstraints;
@@ -59,6 +63,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Class methods
 
+/// r
 + (instancetype)showHUDAddedTo:(UIView *)view animated:(BOOL)animated {
     MBProgressHUD *hud = [[self alloc] initWithView:view];
     hud.removeFromSuperViewOnHide = YES;
@@ -145,7 +150,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 #pragma mark - Show & hide
 
 /**
- *  若有延迟显示 则延迟 否则立即显示
+ *  若有延迟显示 则延迟 否则立即显示 r
  */
 - (void)showAnimated:(BOOL)animated {
     MBMainThreadAssert();
@@ -192,7 +197,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Timer callbacks
 
-///延迟显示 定时器触发 未结束则立即显示
+///延迟显示 定时器触发 未结束则立即显示 r
 - (void)handleGraceTimer:(NSTimer *)theTimer {
     // Show the HUD only if the task is still running
     if (!self.hasFinished) {
@@ -216,7 +221,10 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Internal show & hide operations
 
+/// 对于复用的hud 取消之前的动画 更新开始显示的时间 然后显示hud r
 - (void)showUsingAnimation:(BOOL)animated {
+    
+    //hud可以复用  所以取消之前的动画
     // Cancel any previous animations
     [self.bezelView.layer removeAllAnimations];
     [self.backgroundView.layer removeAllAnimations];
@@ -225,8 +233,8 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self.hideDelayTimer invalidate];
 
     self.showStarted = [NSDate date];
+    //显示出来
     self.alpha = 1.f;
-
     if (animated) {
         [self animateIn:YES withType:self.animationType completion:NULL];
     } else {
@@ -252,7 +260,10 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///根据animationType显示hud
 - (void)animateIn:(BOOL)animatingIn withType:(MBProgressHUDAnimation)type completion:(void(^)(BOOL finished))completion {
+    
+    type = MBProgressHUDAnimationZoom;
     // Automatically determine the correct zoom animation type
     if (type == MBProgressHUDAnimationZoom) {
         type = animatingIn ? MBProgressHUDAnimationZoomIn : MBProgressHUDAnimationZoomOut;
@@ -261,19 +272,25 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     CGAffineTransform small = CGAffineTransformMakeScale(0.5f, 0.5f);
     CGAffineTransform large = CGAffineTransformMakeScale(1.5f, 1.5f);
 
-    // Set starting state
+    // Set starting state 初始状态
     UIView *bezelView = self.bezelView;
     if (animatingIn && bezelView.alpha == 0.f && type == MBProgressHUDAnimationZoomIn) {
+        //放大
         bezelView.transform = small;
     } else if (animatingIn && bezelView.alpha == 0.f && type == MBProgressHUDAnimationZoomOut) {
+        //收缩
         bezelView.transform = large;
     }
 
     // Perform animations
     dispatch_block_t animations = ^{
+        //这是显示的情况
         if (animatingIn) {
+            
             bezelView.transform = CGAffineTransformIdentity;
-        } else if (!animatingIn && type == MBProgressHUDAnimationZoomIn) {
+        }
+        //以下是消失的情况
+        else if (!animatingIn && type == MBProgressHUDAnimationZoomIn) {
             bezelView.transform = large;
         } else if (!animatingIn && type == MBProgressHUDAnimationZoomOut) {
             bezelView.transform = small;
@@ -288,10 +305,12 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     // Spring animations are nicer, but only available on iOS 7+
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000 || TARGET_OS_TV
     if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
-        [UIView animateWithDuration:0.3 delay:0. usingSpringWithDamping:1.f initialSpringVelocity:0.f options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
+        ///To smoothly decelerate the animation without oscillation, use a value of 1.
+        [UIView animateWithDuration:3 delay:0. usingSpringWithDamping:1.f initialSpringVelocity:0.f options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
         return;
     }
 #endif
+    //7之前 
     [UIView animateWithDuration:0.3 delay:0. options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
 }
 

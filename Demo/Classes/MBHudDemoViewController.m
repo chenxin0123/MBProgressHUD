@@ -63,7 +63,7 @@
 }
 
 #pragma mark - Examples
-
+//r
 - (void)indeterminateExample {
     // Show the HUD on the root view (self.view is a scrollable table view and thus not suitable,
     // as the HUD would move with the content as we scroll).
@@ -84,7 +84,7 @@
         });
     });
 }
-
+//r
 - (void)labelExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -100,7 +100,7 @@
         });
     });
 }
-
+//r
 - (void)detailsLabelExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -116,7 +116,7 @@
         });
     });
 }
-
+//r
 - (void)windowExample {
     // Covers the entire screen. Similar to using the root view controller view.
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view.window animated:YES];
@@ -127,7 +127,7 @@
         });
     });
 }
-
+//r
 - (void)determinateExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -143,7 +143,7 @@
         });
     });
 }
-
+//r
 - (void)annularDeterminateExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -159,7 +159,7 @@
         });
     });
 }
-
+//r
 - (void)barDeterminateExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -175,7 +175,7 @@
         });
     });
 }
-
+//r
 - (void)customViewExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -191,7 +191,7 @@
 
     [hud hideAnimated:YES afterDelay:3.f];
 }
-
+//r
 - (void)textExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -203,7 +203,7 @@
 
     [hud hideAnimated:YES afterDelay:3.f];
 }
-
+//r
 - (void)cancelationExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -223,7 +223,7 @@
         });
     });
 }
-
+//r
 - (void)modeSwitchingExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -240,7 +240,7 @@
         });
     });
 }
-
+//r
 - (void)networkingExample {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
@@ -252,12 +252,13 @@
     [self doSomeNetworkWorkWithProgress];
 }
 
+//r
 - (void)dimBackgroundExample {
 	MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 
 	// Change the background view style and color.
 	hud.backgroundView.style = MBProgressHUDBackgroundStyleSolidColor;
-	hud.backgroundView.color = [UIColor colorWithWhite:0.f alpha:0.1f];
+	hud.backgroundView.color = [UIColor redColor];//[UIColor colorWithWhite:0.f alpha:0.1f];
 
 	dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
 		[self doSomeWork];
@@ -266,7 +267,7 @@
 		});
 	});
 }
-
+//r
 - (void)colorExample {
 	MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 	hud.contentColor = [UIColor colorWithRed:0.f green:0.6f blue:0.7f alpha:1.f];
@@ -288,7 +289,7 @@
     // Simulate by just waiting.
     sleep(3.);
 }
-
+//r
 - (void)doSomeWorkWithProgress {
     self.canceled = NO;
     // This just increases the progress indicator in a loop.
@@ -304,7 +305,7 @@
         usleep(50000);
     }
 }
-
+//r
 - (void)doSomeWorkWithMixedProgress {
     MBProgressHUD *hud = [MBProgressHUD HUDForView:self.navigationController.view];
     // Indeterminate mode
@@ -337,7 +338,7 @@
     });
     sleep(2);
 }
-
+//R
 - (void)doSomeNetworkWorkWithProgress {
     NSURLSessionConfiguration *sessionConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfig delegate:self delegateQueue:nil];
@@ -345,7 +346,7 @@
     NSURLSessionDownloadTask *task = [session downloadTaskWithURL:URL];
     [task resume];
 }
-
+//r
 - (void)cancelWork:(id)sender {
     self.canceled = YES;
 }
@@ -359,7 +360,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.examples[section].count;
 }
-
+//r
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     MBExample *example = self.examples[indexPath.section][indexPath.row];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MBExampleCell" forIndexPath:indexPath];
@@ -372,7 +373,7 @@
 }
 
 #pragma mark - UITableViewDelegate
-
+//r
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     MBExample *example = self.examples[indexPath.section][indexPath.row];
 #pragma clang diagnostic push
@@ -386,7 +387,7 @@
 }
 
 #pragma mark - NSURLSessionDelegate
-
+//r
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
     // Do something with the data at location...
 
@@ -401,7 +402,7 @@
         [hud hideAnimated:YES afterDelay:3.f];
     });
 }
-
+//r
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
     float progress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
 

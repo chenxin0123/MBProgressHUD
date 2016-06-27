@@ -63,7 +63,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Class methods
 
-/// r
+/// r 新建并添加到view上
 + (instancetype)showHUDAddedTo:(UIView *)view animated:(BOOL)animated {
     MBProgressHUD *hud = [[self alloc] initWithView:view];
     hud.removeFromSuperViewOnHide = YES;
@@ -73,6 +73,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     return hud;
 }
 
+/// 在view的子视图中遍历查找 r
 + (BOOL)hideHUDForView:(UIView *)view animated:(BOOL)animated {
     MBProgressHUD *hud = [self HUDForView:view];
     if (hud != nil) {
@@ -83,6 +84,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     return NO;
 }
 
+///反向遍历view的子视图 查找一个MBProgressHUD实例 r
 + (MBProgressHUD *)HUDForView:(UIView *)view {
     NSEnumerator *subviewsEnum = [view.subviews reverseObjectEnumerator];
     for (UIView *subview in subviewsEnum) {
@@ -94,7 +96,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Lifecycle
-///r 设置一些基本属性 添加子视图等
+/// 设置一些基本属性 添加子视图等 r
 - (void)commonInit {
     // Set default values for properties
     _animationType = MBProgressHUDAnimationFade;
@@ -169,6 +171,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)hideAnimated:(BOOL)animated {
     MBMainThreadAssert();
     [self.graceTimer invalidate];
@@ -177,6 +180,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     // If the minShow time is set, calculate how long the HUD was shown,
     // and postpone the hiding operation if necessary
     if (self.minShowTime > 0.0 && self.showStarted) {
+        //最小显示时间未到 延迟再隐藏
         NSTimeInterval interv = [[NSDate date] timeIntervalSinceDate:self.showStarted];
         if (interv < self.minShowTime) {
             NSTimer *timer = [NSTimer timerWithTimeInterval:(self.minShowTime - interv) target:self selector:@selector(handleMinShowTimer:) userInfo:nil repeats:NO];
@@ -189,6 +193,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self hideUsingAnimation:self.useAnimation];
 }
 
+///r
 - (void)hideAnimated:(BOOL)animated afterDelay:(NSTimeInterval)delay {
     NSTimer *timer = [NSTimer timerWithTimeInterval:delay target:self selector:@selector(handleHideTimer:) userInfo:@(animated) repeats:NO];
     [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
@@ -205,16 +210,17 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+//延迟隐藏timer的回调 r
 - (void)handleMinShowTimer:(NSTimer *)theTimer {
     [self hideUsingAnimation:self.useAnimation];
 }
-
+///r
 - (void)handleHideTimer:(NSTimer *)timer {
     [self hideAnimated:[timer.userInfo boolValue]];
 }
 
 #pragma mark - View Hierrarchy
-
+///r
 - (void)didMoveToSuperview {
     [self updateForCurrentOrientationAnimated:NO];
 }
@@ -246,6 +252,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///showStarted设为nil 执行动画然后done r
 - (void)hideUsingAnimation:(BOOL)animated {
     if (animated && self.showStarted) {
         self.showStarted = nil;
@@ -260,7 +267,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
-///根据animationType显示hud
+///根据animationType执行显示或者隐藏hud的动画 r
 - (void)animateIn:(BOOL)animatingIn withType:(MBProgressHUDAnimation)type completion:(void(^)(BOOL finished))completion {
     
     type = MBProgressHUDAnimationZoom;
@@ -306,7 +313,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000 || TARGET_OS_TV
     if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
         ///To smoothly decelerate the animation without oscillation, use a value of 1.
-        [UIView animateWithDuration:3 delay:0. usingSpringWithDamping:1.f initialSpringVelocity:0.f options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
+        [UIView animateWithDuration:0.3 delay:0. usingSpringWithDamping:1.f initialSpringVelocity:0.f options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
         return;
     }
 #endif
@@ -314,6 +321,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [UIView animateWithDuration:0.3 delay:0. options:UIViewAnimationOptionBeginFromCurrentState animations:animations completion:completion];
 }
 
+///从父视图移除 执行block和delegate方法 r
 - (void)done {
     // Cancel any scheduled hideDelayed: calls
     [self.hideDelayTimer invalidate];
@@ -405,7 +413,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 /**
- *  根据mode(MBProgressHUDMode)添加indicator r
+ *  根据mode(MBProgressHUDMode)配置indicator r
  */
 - (void)updateIndicators {
     UIView *indicator = self.indicator;
@@ -571,7 +579,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Layout
 /**
- *  setNeedsUpdateConstraints 触发这个方法 结尾必须调用父类实现 在这之前你可以做一些验证或者清理操作
+ *  setNeedsUpdateConstraints 触发这个方法 结尾必须调用父类实现 在这之前你可以做一些验证或者清理操作 r
  */
 - (void)updateConstraints {
     UIView *bezel = self.bezelView;
@@ -581,6 +589,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     NSMutableArray *bezelConstraints = [NSMutableArray array];
     NSDictionary *metrics = @{@"margin": @(margin)};
 
+    //子视图
     NSMutableArray *subviews = [NSMutableArray arrayWithObjects:self.topSpacer, self.label, self.detailsLabel, self.button, self.bottomSpacer, nil];
     if (self.indicator) [subviews insertObject:self.indicator atIndex:1];
 
@@ -593,22 +602,23 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         self.bezelConstraints = nil;
     }
 
-    // Center bezel in container (self), applying the offset if set
+    // Center bezel in container (self), applying the offset if set hud放到中间 应用offset
     CGPoint offset = self.offset;
     NSMutableArray *centeringConstraints = [NSMutableArray array];
     [centeringConstraints addObject:[NSLayoutConstraint constraintWithItem:bezel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1.f constant:offset.x]];
     [centeringConstraints addObject:[NSLayoutConstraint constraintWithItem:bezel attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterY multiplier:1.f constant:offset.y]];
     [self applyPriority:998.f toConstraints:centeringConstraints];
     [self addConstraints:centeringConstraints];
+    
 
-    // Ensure minimum side margin is kept
+    // Ensure minimum side margin is kept 边界margin
     NSMutableArray *sideConstraints = [NSMutableArray array];
     [sideConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"|-(>=margin)-[bezel]-(>=margin)-|" options:0 metrics:metrics views:NSDictionaryOfVariableBindings(bezel)]];
     [sideConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(>=margin)-[bezel]-(>=margin)-|" options:0 metrics:metrics views:NSDictionaryOfVariableBindings(bezel)]];
     [self applyPriority:999.f toConstraints:sideConstraints];
     [self addConstraints:sideConstraints];
 
-    // Minimum bezel size, if set
+    // Minimum bezel size, if set hud的size不能小于minSize
     CGSize minimumSize = self.minSize;
     if (!CGSizeEqualToSize(minimumSize, CGSizeZero)) {
         NSMutableArray *minSizeConstraints = [NSMutableArray array];
@@ -618,7 +628,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         [bezelConstraints addObjectsFromArray:minSizeConstraints];
     }
 
-    // Square aspect ratio, if set
+    // Square aspect ratio, if set 正边形
     if (self.square) {
         NSLayoutConstraint *square = [NSLayoutConstraint constraintWithItem:bezel attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:bezel attribute:NSLayoutAttributeWidth multiplier:1.f constant:0];
         square.priority = 997.f;
@@ -660,14 +670,15 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     self.paddingConstraints = [paddingConstraints copy];
     [self updatePaddingConstraints];
     
+    //调用父类方法
     [super updateConstraints];
 }
-
+//r
 - (void)layoutSubviews {
     [self updatePaddingConstraints];
     [super layoutSubviews];
 }
-
+//r
 - (void)updatePaddingConstraints {
     // Set padding dynamically, depending on whether the view is visible or not
     __block BOOL hasVisibleAncestors = NO;
@@ -682,7 +693,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
         hasVisibleAncestors |= secondVisible;
     }];
 }
-
+//r
 - (void)applyPriority:(UILayoutPriority)priority toConstraints:(NSArray *)constraints {
     for (NSLayoutConstraint *constraint in constraints) {
         constraint.priority = priority;
@@ -690,7 +701,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Properties
-
+///r
 - (void)setMode:(MBProgressHUDMode)mode {
     if (mode != _mode) {
         _mode = mode;
@@ -698,6 +709,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+/// 如果mode为MBProgressHUDModeCustomView 才更新hud r
 - (void)setCustomView:(UIView *)customView {
     if (customView != _customView) {
         _customView = customView;
@@ -707,6 +719,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setOffset:(CGPoint)offset {
     if (!CGPointEqualToPoint(offset, _offset)) {
         _offset = offset;
@@ -714,6 +727,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setMargin:(CGFloat)margin {
     if (margin != _margin) {
         _margin = margin;
@@ -721,6 +735,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setMinSize:(CGSize)minSize {
     if (!CGSizeEqualToSize(minSize, _minSize)) {
         _minSize = minSize;
@@ -728,6 +743,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setSquare:(BOOL)square {
     if (square != _square) {
         _square = square;
@@ -735,6 +751,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setProgress:(float)progress {
     if (progress != _progress) {
         _progress = progress;
@@ -753,6 +770,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     }
 }
 
+///r
 - (void)setDefaultMotionEffectsEnabled:(BOOL)defaultMotionEffectsEnabled {
     if (defaultMotionEffectsEnabled != _defaultMotionEffectsEnabled) {
         _defaultMotionEffectsEnabled = defaultMotionEffectsEnabled;
@@ -762,7 +780,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 
 #pragma mark - Notifications
 
-///app方向改变
+///app方向改变 r
 - (void)registerForNotifications {
 #if !TARGET_OS_TV
     NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
@@ -1124,7 +1142,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @implementation MBBackgroundView
 
 #pragma mark - Lifecycle
-///r 根据系统版本来设置_style 和 _color
+/// 根据系统版本来设置_style 和 _color r
 - (instancetype)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
         if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_7_0) {
@@ -1266,15 +1284,16 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Show & hide
-
+///r
 - (void)show:(BOOL)animated {
     [self showAnimated:animated];
 }
 
+///r
 - (void)hide:(BOOL)animated {
     [self hideAnimated:animated];
 }
-
+///r
 - (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay {
     [self hideAnimated:animated afterDelay:delay];
 }
@@ -1305,6 +1324,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self showAnimated:animated whileExecutingBlock:block onQueue:queue completionBlock:NULL];
 }
 
+// 在queue上执行block
 - (void)showAnimated:(BOOL)animated whileExecutingBlock:(dispatch_block_t)block onQueue:(dispatch_queue_t)queue completionBlock:(nullable MBProgressHUDCompletionBlock)completion {
     self.taskInProgress = YES;
     self.completionBlock = completion;
@@ -1317,118 +1337,121 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     [self showAnimated:animated];
 }
 
+//r
 - (void)cleanUp {
     self.taskInProgress = NO;
     [self hideAnimated:self.useAnimation];
 }
 
 #pragma mark - Labels
-
+///r
 - (NSString *)labelText {
     return self.label.text;
 }
-
+///r
 - (void)setLabelText:(NSString *)labelText {
     MBMainThreadAssert();
     self.label.text = labelText;
 }
-
+///r
 - (UIFont *)labelFont {
     return self.label.font;
 }
-
+///r
 - (void)setLabelFont:(UIFont *)labelFont {
     MBMainThreadAssert();
     self.label.font = labelFont;
 }
-
+///r
 - (UIColor *)labelColor {
     return self.label.textColor;
 }
-
+///r
 - (void)setLabelColor:(UIColor *)labelColor {
     MBMainThreadAssert();
     self.label.textColor = labelColor;
 }
-
+///r
 - (NSString *)detailsLabelText {
     return self.detailsLabel.text;
 }
-
+///r
 - (void)setDetailsLabelText:(NSString *)detailsLabelText {
     MBMainThreadAssert();
     self.detailsLabel.text = detailsLabelText;
 }
-
+///r
 - (UIFont *)detailsLabelFont {
     return self.detailsLabel.font;
 }
-
+///r
 - (void)setDetailsLabelFont:(UIFont *)detailsLabelFont {
     MBMainThreadAssert();
     self.detailsLabel.font = detailsLabelFont;
 }
-
+///r
 - (UIColor *)detailsLabelColor {
     return self.detailsLabel.textColor;
 }
-
+///r
 - (void)setDetailsLabelColor:(UIColor *)detailsLabelColor {
     MBMainThreadAssert();
     self.detailsLabel.textColor = detailsLabelColor;
 }
-
+///r
 - (CGFloat)opacity {
     return _opacity;
 }
-
+///r
 - (void)setOpacity:(CGFloat)opacity {
     MBMainThreadAssert();
     _opacity = opacity;
 }
-
+///r
 - (UIColor *)color {
     return self.bezelView.color;
 }
-
+///r
 - (void)setColor:(UIColor *)color {
     MBMainThreadAssert();
     self.bezelView.color = color;
 }
-
+///r
 - (CGFloat)yOffset {
     return self.offset.y;
 }
-
+///r
 - (void)setYOffset:(CGFloat)yOffset {
     MBMainThreadAssert();
     self.offset = CGPointMake(self.offset.x, yOffset);
 }
-
+///r
 - (CGFloat)xOffset {
     return self.offset.x;
 }
-
+///r
 - (void)setXOffset:(CGFloat)xOffset {
     MBMainThreadAssert();
     self.offset = CGPointMake(xOffset, self.offset.y);
 }
-
+///r
 - (CGFloat)cornerRadius {
     return self.bezelView.layer.cornerRadius;
 }
-
+///r
 - (void)setCornerRadius:(CGFloat)cornerRadius {
     MBMainThreadAssert();
     self.bezelView.layer.cornerRadius = cornerRadius;
 }
 
+///r
 - (BOOL)dimBackground {
     MBBackgroundView *backgroundView = self.backgroundView;
     UIColor *dimmedColor =  [UIColor colorWithWhite:0.f alpha:.2f];
     return backgroundView.style == MBProgressHUDBackgroundStyleSolidColor && [backgroundView.color isEqual:dimmedColor];
 }
 
+///r
 - (void)setDimBackground:(BOOL)dimBackground {
     MBMainThreadAssert();
     self.backgroundView.style = MBProgressHUDBackgroundStyleSolidColor;
@@ -1445,6 +1468,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
     return _activityIndicatorColor;
 }
 
+///r
 - (void)setActivityIndicatorColor:(UIColor *)activityIndicatorColor {
     if (activityIndicatorColor != _activityIndicatorColor) {
         _activityIndicatorColor = activityIndicatorColor;
@@ -1460,7 +1484,7 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 @implementation MBProgressHUDRoundedButton
 
 #pragma mark - Lifecycle
-
+//r
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
@@ -1471,14 +1495,14 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Layout
-
+//r
 - (void)layoutSubviews {
     [super layoutSubviews];
     // Fully rounded corners
     CGFloat height = CGRectGetHeight(self.bounds);
     self.layer.cornerRadius = ceil(height / 2.f);
 }
-
+// 如果没有相关联的点击事件就返回0
 - (CGSize)intrinsicContentSize {
     // Only show if we have associated control events
     if (self.allControlEvents == 0) return CGSizeZero;
@@ -1489,14 +1513,14 @@ static const CGFloat MBDefaultDetailsLabelFontSize = 12.f;
 }
 
 #pragma mark - Color
-
+//r
 - (void)setTitleColor:(UIColor *)color forState:(UIControlState)state {
     [super setTitleColor:color forState:state];
     // Update related colors
     [self setHighlighted:self.highlighted];
     self.layer.borderColor = color.CGColor;
 }
-
+//r
 - (void)setHighlighted:(BOOL)highlighted {
     [super setHighlighted:highlighted];
     UIColor *baseColor = [self titleColorForState:UIControlStateSelected];
